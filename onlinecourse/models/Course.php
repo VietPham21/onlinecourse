@@ -56,5 +56,40 @@ class Course {
         $row = $stmt->fetch();
         return $row['total'];
     }
+
+    // 5. Hàm tạo khóa học mới (Cho giảng viên)
+    public function create($title, $description, $instructorId, $categoryId, $price, $durationWeeks, $level, $image) {
+        $query = "INSERT INTO courses (title, description, instructor_id, category_id, price, duration_weeks, level, image, is_approved) 
+                  VALUES (:title, :description, :instructor_id, :category_id, :price, :duration_weeks, :level, :image, 0)";
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':instructor_id', $instructorId);
+        $stmt->bindParam(':category_id', $categoryId);
+        $stmt->bindParam(':price', $price);
+        $stmt->bindParam(':duration_weeks', $durationWeeks);
+        $stmt->bindParam(':level', $level);
+        $stmt->bindParam(':image', $image);
+        
+        try {
+            return $stmt->execute();
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
+    // 6. Hàm lấy danh sách khóa học của giảng viên
+    public function getCoursesByInstructor($instructorId) {
+        $query = "SELECT c.*, cat.name as category_name 
+                  FROM courses c
+                  LEFT JOIN categories cat ON c.category_id = cat.id
+                  WHERE c.instructor_id = :instructor_id 
+                  ORDER BY c.created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':instructor_id', $instructorId);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }
 ?>

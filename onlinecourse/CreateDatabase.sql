@@ -10,6 +10,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     fullname VARCHAR(255),
     role INT DEFAULT 0 COMMENT '0: học viên, 1: giảng viên, 2: quản trị viên',
+    status INT DEFAULT 1 COMMENT '0: banned, 1: active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE courses (
     duration_weeks INT,
     level VARCHAR(50) COMMENT 'Beginner, Intermediate, Advanced',
     image VARCHAR(255),
+    is_approved INT DEFAULT 0 COMMENT '0: chờ duyệt, 1: đã duyệt',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -86,5 +88,5 @@ INSERT INTO categories (name, description) VALUES
 ('Khoa học dữ liệu', 'Python, Machine Learning, AI');
 
 -- Thêm khóa học mẫu (Do giảng viên ID=2 tạo)
-INSERT INTO courses (title, description, instructor_id, category_id, price, level) VALUES 
-('Lập trình PHP MVC', 'Học xây dựng web từ A-Z với mô hình MVC', 2, 1, 500000, 'Intermediate');
+INSERT INTO courses (title, description, instructor_id, category_id, price, level, is_approved) VALUES 
+('Lập trình PHP MVC', 'Học xây dựng web từ A-Z với mô hình MVC', 2, 1, 500000, 'Intermediate', 1);
