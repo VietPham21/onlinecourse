@@ -75,6 +75,18 @@ CREATE TABLE materials (
     FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
 );
 
+-- 8. Tạo bảng Lesson Progress (Tiến độ học tập của học viên)
+CREATE TABLE lesson_progress (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    enrollment_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    is_completed INT DEFAULT 0 COMMENT '0: chưa học, 1: đã học',
+    completed_at DATETIME NULL,
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_enrollment_lesson (enrollment_id, lesson_id)
+);
+
 -- Thêm 3 user mẫu (Mật khẩu là: 123456)
 -- Lưu ý: Mật khẩu này đã được mã hóa bằng BCRYPT theo yêu cầu 
 INSERT INTO users (username, email, password, fullname, role) VALUES 

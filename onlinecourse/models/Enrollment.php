@@ -64,6 +64,29 @@ class Enrollment {
         $stmt->execute();
         return $stmt->fetch();
     }
+
+    // Lấy chi tiết enrollment của một học viên
+    public function getEnrollmentById($enrollmentId) {
+        $query = "SELECT e.*, u.id as student_id, u.username, u.email, u.fullname, c.title as course_title, c.id as course_id
+                  FROM enrollments e
+                  JOIN users u ON e.student_id = u.id
+                  JOIN courses c ON e.course_id = c.id
+                  WHERE e.id = :enrollment_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':enrollment_id', $enrollmentId);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    // Lấy enrollment theo course_id và student_id
+    public function getEnrollmentByCourseAndStudent($courseId, $studentId) {
+        $query = "SELECT * FROM enrollments WHERE course_id = :course_id AND student_id = :student_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':course_id', $courseId);
+        $stmt->bindParam(':student_id', $studentId);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
 }
 ?>
 

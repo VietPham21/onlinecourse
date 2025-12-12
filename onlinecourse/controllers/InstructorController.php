@@ -4,6 +4,7 @@ require_once 'models/Category.php';
 require_once 'models/Lesson.php';
 require_once 'models/Material.php';
 require_once 'models/Enrollment.php';
+require_once 'models/LessonProgress.php';
 
 class InstructorController {
     private $courseModel;
@@ -11,6 +12,7 @@ class InstructorController {
     private $lessonModel;
     private $materialModel;
     private $enrollmentModel;
+    private $lessonProgressModel;
 
     public function __construct() {
         // Kiểm tra đăng nhập và quyền Giảng viên
@@ -27,6 +29,7 @@ class InstructorController {
         $this->lessonModel = new Lesson($db);
         $this->materialModel = new Material($db);
         $this->enrollmentModel = new Enrollment($db);
+        $this->lessonProgressModel = new LessonProgress($db);
     }
 
     // Dashboard của giảng viên
@@ -642,6 +645,40 @@ class InstructorController {
         $statistics = $this->enrollmentModel->getStatisticsByCourseId($courseId);
         
         include 'views/instructor/students/list.php';
+    }
+
+    // Xem chi tiết tiến độ của một học viên
+    public function viewStudentProgress() {
+        $instructorId = $_SESSION['user_id'];
+        $enrollmentId = isset($_GET['enrollment_id']) ? intval($_GET['enrollment_id']) : 0;
+        
+        if (!$enrollmentId) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+            exit();
+        }
+        
+        // Lấy thông tin enrollment
+        $enrollment = $this->enrollmentModel->getEnrollmentById($enrollmentId);
+        if (!$enrollment) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        // Kiểm tra quyền sở hữu khóa học
+        if (!$this->courseModel->isOwner($enrollment['course_id'], $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($enrollment['course_id']);
+        
+        // Lấy tiến độ chi tiết của học viên (đã bao gồm tất cả bài học)
+        $lessonsWithProgress = $this->lessonProgressModel->getProgressByEnrollmentId($enrollmentId);
+        
+        // Tính toán tiến độ
+        $calculatedProgress = $this->lessonProgressModel->calculateProgress($enrollment['course_id'], $enrollment['student_id']);
+        
+        include 'views/instructor/students/progress.php';
     }
 }
 ?>

@@ -74,6 +74,7 @@
                                 <th style="width: 120px;">Trạng thái</th>
                                 <th style="width: 120px;">Tiến độ</th>
                                 <th style="width: 150px;">Ngày đăng ký</th>
+                                <th style="width: 120px;" class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -125,6 +126,12 @@
                                 </td>
                                 <td>
                                     <small><?php echo date('d/m/Y H:i', strtotime($student['enrolled_date'])); ?></small>
+                                </td>
+                                <td class="text-center">
+                                    <a href="index.php?controller=instructor&action=viewStudentProgress&enrollment_id=<?php echo $student['id']; ?>" 
+                                       class="btn btn-sm btn-info" title="Xem chi tiết tiến độ">
+                                        <i class="bi bi-graph-up"></i> Tiến độ
+                                    </a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
