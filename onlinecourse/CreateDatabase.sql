@@ -73,10 +73,6 @@ CREATE TABLE materials (
     FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
 );
 
--- =============================================
--- DỮ LIỆU MẪU (Dùng để test ngay)
--- =============================================
-
 -- Thêm 3 user mẫu (Mật khẩu là: 123456)
 -- Lưu ý: Mật khẩu này đã được mã hóa bằng BCRYPT theo yêu cầu 
 INSERT INTO users (username, email, password, fullname, role) VALUES 
