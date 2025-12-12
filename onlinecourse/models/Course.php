@@ -91,5 +91,74 @@ class Course {
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    // 7. Hàm lấy chi tiết khóa học theo ID
+    public function getById($id) {
+        $query = "SELECT c.*, cat.name as category_name 
+                  FROM courses c
+                  LEFT JOIN categories cat ON c.category_id = cat.id
+                  WHERE c.id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    // 8. Hàm cập nhật khóa học
+    public function update($id, $title, $description, $categoryId, $price, $durationWeeks, $level, $image = null) {
+        if ($image) {
+            $query = "UPDATE courses SET title = :title, description = :description, category_id = :category_id, 
+                      price = :price, duration_weeks = :duration_weeks, level = :level, image = :image 
+                      WHERE id = :id";
+        } else {
+            $query = "UPDATE courses SET title = :title, description = :description, category_id = :category_id, 
+                      price = :price, duration_weeks = :duration_weeks, level = :level 
+                      WHERE id = :id";
+        }
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':category_id', $categoryId);
+        $stmt->bindParam(':price', $price);
+        $stmt->bindParam(':duration_weeks', $durationWeeks);
+        $stmt->bindParam(':level', $level);
+        
+        if ($image) {
+            $stmt->bindParam(':image', $image);
+        }
+        
+        try {
+            return $stmt->execute();
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
+    // 9. Hàm xóa khóa học của giảng viên (kiểm tra quyền sở hữu)
+    public function deleteByInstructor($id, $instructorId) {
+        $query = "DELETE FROM courses WHERE id = :id AND instructor_id = :instructor_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':instructor_id', $instructorId);
+        
+        try {
+            return $stmt->execute();
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
+    // 10. Kiểm tra quyền sở hữu khóa học
+    public function isOwner($courseId, $instructorId) {
+        $query = "SELECT COUNT(*) as count FROM courses WHERE id = :id AND instructor_id = :instructor_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $courseId);
+        $stmt->bindParam(':instructor_id', $instructorId);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return $result['count'] > 0;
+    }
 }
 ?>

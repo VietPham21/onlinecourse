@@ -104,6 +104,141 @@ class InstructorController {
         $courses = $this->courseModel->getCoursesByInstructor($instructorId);
         include 'views/instructor/my_courses.php';
     }
+
+    // Hiển thị form sửa khóa học
+    public function editCourse() {
+        $instructorId = $_SESSION['user_id'];
+        $courseId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        if (!$courseId || !$this->courseModel->isOwner($courseId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($courseId);
+        if (!$course) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $categories = $this->categoryModel->getAll();
+        include 'views/instructor/course/edit.php';
+    }
+
+    // Xử lý cập nhật khóa học
+    public function updateCourse() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $instructorId = $_SESSION['user_id'];
+            $courseId = intval($_POST['id']);
+            
+            // Kiểm tra quyền sở hữu
+            if (!$this->courseModel->isOwner($courseId, $instructorId)) {
+                header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+                exit();
+            }
+            
+            $title = trim($_POST['title']);
+            $description = trim($_POST['description']);
+            $categoryId = isset($_POST['category_id']) && $_POST['category_id'] != '' ? $_POST['category_id'] : null;
+            $price = isset($_POST['price']) ? floatval($_POST['price']) : 0;
+            $durationWeeks = isset($_POST['duration_weeks']) && $_POST['duration_weeks'] != '' ? intval($_POST['duration_weeks']) : null;
+            $level = isset($_POST['level']) && $_POST['level'] != '' ? $_POST['level'] : null;
+            
+            // Lấy thông tin khóa học hiện tại
+            $currentCourse = $this->courseModel->getById($courseId);
+            $image = $currentCourse['image']; // Giữ nguyên ảnh cũ nếu không upload mới
+            
+            // Xử lý upload ảnh mới (nếu có)
+            if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+                $uploadDir = __DIR__ . '/../uploads/courses/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                
+                $fileExtension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                
+                if (in_array(strtolower($fileExtension), $allowedExtensions)) {
+                    // Xóa ảnh cũ nếu có
+                    if ($currentCourse['image'] && file_exists(__DIR__ . '/../' . $currentCourse['image'])) {
+                        unlink(__DIR__ . '/../' . $currentCourse['image']);
+                    }
+                    
+                    $fileName = uniqid() . '_' . time() . '.' . $fileExtension;
+                    $filePath = $uploadDir . $fileName;
+                    
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $filePath)) {
+                        $image = 'uploads/courses/' . $fileName;
+                    }
+                }
+            }
+            
+            // Validate
+            if (empty($title)) {
+                $error = "Vui lòng nhập tên khóa học!";
+                $course = $currentCourse;
+                $categories = $this->categoryModel->getAll();
+                include 'views/instructor/course/edit.php';
+                return;
+            }
+            
+            // Cập nhật khóa học
+            $result = $this->courseModel->update(
+                $courseId,
+                $title,
+                $description,
+                $categoryId,
+                $price,
+                $durationWeeks,
+                $level,
+                $image
+            );
+            
+            if ($result) {
+                header("Location: index.php?controller=instructor&action=dashboard&msg=updated");
+            } else {
+                $error = "Có lỗi xảy ra khi cập nhật khóa học!";
+                $course = $currentCourse;
+                $categories = $this->categoryModel->getAll();
+                include 'views/instructor/course/edit.php';
+            }
+        } else {
+            header("Location: index.php?controller=instructor&action=dashboard");
+        }
+    }
+
+    // Xóa khóa học
+    public function deleteCourse() {
+        $instructorId = $_SESSION['user_id'];
+        $courseId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        if (!$courseId) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+            exit();
+        }
+        
+        // Kiểm tra quyền sở hữu
+        if (!$this->courseModel->isOwner($courseId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        // Lấy thông tin khóa học để xóa ảnh
+        $course = $this->courseModel->getById($courseId);
+        if ($course && $course['image'] && file_exists(__DIR__ . '/../' . $course['image'])) {
+            unlink(__DIR__ . '/../' . $course['image']);
+        }
+        
+        // Xóa khóa học
+        $result = $this->courseModel->deleteByInstructor($courseId, $instructorId);
+        
+        if ($result) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=deleted");
+        } else {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+        }
+        exit();
+    }
 }
 ?>
 

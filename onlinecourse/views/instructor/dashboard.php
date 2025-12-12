@@ -8,11 +8,33 @@
         </a>
     </div>
 
-    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'success'): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Tạo khóa học thành công! Khóa học đang chờ duyệt từ quản trị viên.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <?php if(isset($_GET['msg'])): ?>
+        <?php if($_GET['msg'] == 'success'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                Tạo khóa học thành công! Khóa học đang chờ duyệt từ quản trị viên.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif($_GET['msg'] == 'updated'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                Cập nhật khóa học thành công!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif($_GET['msg'] == 'deleted'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                Xóa khóa học thành công!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif($_GET['msg'] == 'unauthorized'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Bạn không có quyền thực hiện thao tác này!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif($_GET['msg'] == 'error'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Có lỗi xảy ra! Vui lòng thử lại.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <div class="row mb-4">
@@ -94,8 +116,15 @@
                         </td>
                         <td><?php echo date('d/m/Y', strtotime($course['created_at'])); ?></td>
                         <td>
-                            <a href="index.php?controller=course&action=detail&id=<?php echo $course['id']; ?>" 
-                               class="btn btn-sm btn-info">Xem</a>
+                            <div class="btn-group" role="group">
+                                <a href="index.php?controller=course&action=detail&id=<?php echo $course['id']; ?>" 
+                                   class="btn btn-sm btn-info">Xem</a>
+                                <a href="index.php?controller=instructor&action=editCourse&id=<?php echo $course['id']; ?>" 
+                                   class="btn btn-sm btn-warning">Sửa</a>
+                                <a href="index.php?controller=instructor&action=deleteCourse&id=<?php echo $course['id']; ?>" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa khóa học này? Hành động này không thể hoàn tác!');">Xóa</a>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
