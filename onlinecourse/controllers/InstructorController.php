@@ -3,12 +3,14 @@ require_once 'models/Course.php';
 require_once 'models/Category.php';
 require_once 'models/Lesson.php';
 require_once 'models/Material.php';
+require_once 'models/Enrollment.php';
 
 class InstructorController {
     private $courseModel;
     private $categoryModel;
     private $lessonModel;
     private $materialModel;
+    private $enrollmentModel;
 
     public function __construct() {
         // Kiểm tra đăng nhập và quyền Giảng viên
@@ -24,6 +26,7 @@ class InstructorController {
         $this->categoryModel = new Category($db);
         $this->lessonModel = new Lesson($db);
         $this->materialModel = new Material($db);
+        $this->enrollmentModel = new Enrollment($db);
     }
 
     // Dashboard của giảng viên
@@ -31,9 +34,10 @@ class InstructorController {
         $instructorId = $_SESSION['user_id'];
         $courses = $this->courseModel->getCoursesByInstructor($instructorId);
         
-        // Đếm số bài học cho mỗi khóa học
+        // Đếm số bài học và số học viên cho mỗi khóa học
         foreach($courses as &$course) {
             $course['lesson_count'] = $this->lessonModel->countByCourseId($course['id']);
+            $course['student_count'] = $this->enrollmentModel->countByCourseId($course['id']);
         }
         unset($course);
         
@@ -614,6 +618,30 @@ class InstructorController {
             header("Location: index.php?controller=instructor&action=uploadMaterial&lesson_id=" . $lessonId . "&msg=error");
         }
         exit();
+    }
+
+    // ========== QUẢN LÝ HỌC VIÊN ĐÃ ĐĂNG KÝ ==========
+
+    // Xem danh sách học viên đã đăng ký khóa học
+    public function viewStudents() {
+        $instructorId = $_SESSION['user_id'];
+        $courseId = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
+        
+        if (!$courseId || !$this->courseModel->isOwner($courseId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($courseId);
+        if (!$course) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $students = $this->enrollmentModel->getStudentsByCourseId($courseId);
+        $statistics = $this->enrollmentModel->getStatisticsByCourseId($courseId);
+        
+        include 'views/instructor/students/list.php';
     }
 }
 ?>

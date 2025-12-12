@@ -81,6 +81,7 @@
                         <th>Giá</th>
                         <th>Cấp độ</th>
                         <th>Bài học</th>
+                        <th>Học viên</th>
                         <th>Trạng thái</th>
                         <th>Ngày tạo</th>
                         <th>Thao tác</th>
@@ -114,6 +115,11 @@
                             </span>
                         </td>
                         <td>
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-people"></i> <?php echo $course['student_count'] ?? 0; ?> học viên
+                            </span>
+                        </td>
+                        <td>
                             <?php if($course['is_approved'] == 1): ?>
                                 <span class="badge bg-success">Đã duyệt</span>
                             <?php else: ?>
@@ -129,7 +135,11 @@
                                 </a>
                                 <a href="index.php?controller=instructor&action=manageLessons&course_id=<?php echo $course['id']; ?>" 
                                    class="btn btn-sm btn-primary" title="Quản lý bài học">
-                                    <i class="bi bi-book"></i> Bài học
+                                    <i class="bi bi-book"></i>
+                                </a>
+                                <a href="index.php?controller=instructor&action=viewStudents&course_id=<?php echo $course['id']; ?>" 
+                                   class="btn btn-sm btn-success" title="Xem học viên đã đăng ký">
+                                    <i class="bi bi-people"></i>
                                 </a>
                                 <a href="index.php?controller=instructor&action=editCourse&id=<?php echo $course['id']; ?>" 
                                    class="btn btn-sm btn-warning" title="Sửa khóa học">
