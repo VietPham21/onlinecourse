@@ -17,10 +17,21 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <?php if(isset($_SESSION['user_id'])): ?>
-                        <?php if($_SESSION['role'] == 2): ?>
-                            <li class="nav-item"><a class="nav-link text-warning" href="index.php?controller=admin&action=dashboard">Trang Quản Trị</a></li>
-                        <?php endif; ?>
                         
+                        <?php if($_SESSION['role'] == 2): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Quản trị viên
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" href="index.php?controller=admin&action=dashboard">Thống kê</a></li>
+                                    <li><a class="dropdown-item" href="index.php?controller=admin&action=users">Quản lý Người dùng</a></li>
+                                    <li><a class="dropdown-item" href="index.php?controller=admin&action=categories">Quản lý Danh mục</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="index.php?controller=admin&action=pendingCourses">Duyệt khóa học</a></li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
                         <li class="nav-item"><a class="nav-link" href="#">Chào, <?php echo $_SESSION['username']; ?></a></li>
                         <li class="nav-item"><a class="nav-link btn btn-outline-danger btn-sm text-white" href="index.php?controller=auth&action=logout">Đăng xuất</a></li>
                     <?php else: ?>
