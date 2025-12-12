@@ -1,10 +1,12 @@
 <?php
 require_once 'models/Course.php';
 require_once 'models/Category.php';
+require_once 'models/Lesson.php';
 
 class InstructorController {
     private $courseModel;
     private $categoryModel;
+    private $lessonModel;
 
     public function __construct() {
         // Kiểm tra đăng nhập và quyền Giảng viên
@@ -18,12 +20,20 @@ class InstructorController {
         $db = $database->connect();
         $this->courseModel = new Course($db);
         $this->categoryModel = new Category($db);
+        $this->lessonModel = new Lesson($db);
     }
 
     // Dashboard của giảng viên
     public function dashboard() {
         $instructorId = $_SESSION['user_id'];
         $courses = $this->courseModel->getCoursesByInstructor($instructorId);
+        
+        // Đếm số bài học cho mỗi khóa học
+        foreach($courses as &$course) {
+            $course['lesson_count'] = $this->lessonModel->countByCourseId($course['id']);
+        }
+        unset($course);
+        
         include 'views/instructor/dashboard.php';
     }
 
@@ -236,6 +246,189 @@ class InstructorController {
             header("Location: index.php?controller=instructor&action=dashboard&msg=deleted");
         } else {
             header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+        }
+        exit();
+    }
+
+    // ========== QUẢN LÝ BÀI HỌC (LESSONS) ==========
+
+    // Hiển thị danh sách bài học của một khóa học
+    public function manageLessons() {
+        $instructorId = $_SESSION['user_id'];
+        $courseId = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
+        
+        if (!$courseId || !$this->courseModel->isOwner($courseId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($courseId);
+        if (!$course) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $lessons = $this->lessonModel->getByCourseId($courseId);
+        include 'views/instructor/lessons/manage.php';
+    }
+
+    // Hiển thị form tạo bài học mới
+    public function createLesson() {
+        $instructorId = $_SESSION['user_id'];
+        $courseId = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
+        
+        if (!$courseId || !$this->courseModel->isOwner($courseId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($courseId);
+        if (!$course) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $nextOrder = $this->lessonModel->getNextOrder($courseId);
+        include 'views/instructor/lessons/create.php';
+    }
+
+    // Xử lý lưu bài học mới
+    public function storeLesson() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $instructorId = $_SESSION['user_id'];
+            $courseId = intval($_POST['course_id']);
+            
+            // Kiểm tra quyền sở hữu
+            if (!$this->courseModel->isOwner($courseId, $instructorId)) {
+                header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+                exit();
+            }
+            
+            $title = trim($_POST['title']);
+            $content = trim($_POST['content']);
+            $videoUrl = trim($_POST['video_url']);
+            $order = isset($_POST['order']) ? intval($_POST['order']) : $this->lessonModel->getNextOrder($courseId);
+            
+            // Validate
+            if (empty($title)) {
+                $error = "Vui lòng nhập tên bài học!";
+                $course = $this->courseModel->getById($courseId);
+                $nextOrder = $this->lessonModel->getNextOrder($courseId);
+                include 'views/instructor/lessons/create.php';
+                return;
+            }
+            
+            // Lưu bài học
+            $result = $this->lessonModel->create($courseId, $title, $content, $videoUrl, $order);
+            
+            if ($result) {
+                header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $courseId . "&msg=success");
+            } else {
+                $error = "Có lỗi xảy ra khi tạo bài học!";
+                $course = $this->courseModel->getById($courseId);
+                $nextOrder = $this->lessonModel->getNextOrder($courseId);
+                include 'views/instructor/lessons/create.php';
+            }
+        } else {
+            header("Location: index.php?controller=instructor&action=dashboard");
+        }
+    }
+
+    // Hiển thị form sửa bài học
+    public function editLesson() {
+        $instructorId = $_SESSION['user_id'];
+        $lessonId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        if (!$lessonId || !$this->lessonModel->belongsToInstructor($lessonId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $lesson = $this->lessonModel->getById($lessonId);
+        if (!$lesson) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($lesson['course_id']);
+        include 'views/instructor/lessons/edit.php';
+    }
+
+    // Xử lý cập nhật bài học
+    public function updateLesson() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $instructorId = $_SESSION['user_id'];
+            $lessonId = intval($_POST['id']);
+            
+            // Kiểm tra quyền sở hữu
+            if (!$this->lessonModel->belongsToInstructor($lessonId, $instructorId)) {
+                header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+                exit();
+            }
+            
+            $title = trim($_POST['title']);
+            $content = trim($_POST['content']);
+            $videoUrl = trim($_POST['video_url']);
+            $order = intval($_POST['order']);
+            
+            // Validate
+            if (empty($title)) {
+                $error = "Vui lòng nhập tên bài học!";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                include 'views/instructor/lessons/edit.php';
+                return;
+            }
+            
+            // Cập nhật bài học
+            $result = $this->lessonModel->update($lessonId, $title, $content, $videoUrl, $order);
+            
+            if ($result) {
+                $lesson = $this->lessonModel->getById($lessonId);
+                header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $lesson['course_id'] . "&msg=updated");
+            } else {
+                $error = "Có lỗi xảy ra khi cập nhật bài học!";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                include 'views/instructor/lessons/edit.php';
+            }
+        } else {
+            header("Location: index.php?controller=instructor&action=dashboard");
+        }
+    }
+
+    // Xóa bài học
+    public function deleteLesson() {
+        $instructorId = $_SESSION['user_id'];
+        $lessonId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        if (!$lessonId) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+            exit();
+        }
+        
+        // Kiểm tra quyền sở hữu
+        if (!$this->lessonModel->belongsToInstructor($lessonId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        // Lấy thông tin bài học để lấy course_id
+        $lesson = $this->lessonModel->getById($lessonId);
+        if (!$lesson) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $courseId = $lesson['course_id'];
+        
+        // Xóa bài học
+        $result = $this->lessonModel->delete($lessonId);
+        
+        if ($result) {
+            header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $courseId . "&msg=deleted");
+        } else {
+            header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $courseId . "&msg=error");
         }
         exit();
     }

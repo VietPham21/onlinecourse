@@ -80,6 +80,7 @@
                         <th>Danh mục</th>
                         <th>Giá</th>
                         <th>Cấp độ</th>
+                        <th>Bài học</th>
                         <th>Trạng thái</th>
                         <th>Ngày tạo</th>
                         <th>Thao tác</th>
@@ -108,6 +109,11 @@
                             </span>
                         </td>
                         <td>
+                            <span class="badge bg-info">
+                                <i class="bi bi-book"></i> <?php echo $course['lesson_count'] ?? 0; ?> bài
+                            </span>
+                        </td>
+                        <td>
                             <?php if($course['is_approved'] == 1): ?>
                                 <span class="badge bg-success">Đã duyệt</span>
                             <?php else: ?>
@@ -118,12 +124,23 @@
                         <td>
                             <div class="btn-group" role="group">
                                 <a href="index.php?controller=course&action=detail&id=<?php echo $course['id']; ?>" 
-                                   class="btn btn-sm btn-info">Xem</a>
+                                   class="btn btn-sm btn-info" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="index.php?controller=instructor&action=manageLessons&course_id=<?php echo $course['id']; ?>" 
+                                   class="btn btn-sm btn-primary" title="Quản lý bài học">
+                                    <i class="bi bi-book"></i> Bài học
+                                </a>
                                 <a href="index.php?controller=instructor&action=editCourse&id=<?php echo $course['id']; ?>" 
-                                   class="btn btn-sm btn-warning">Sửa</a>
+                                   class="btn btn-sm btn-warning" title="Sửa khóa học">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
                                 <a href="index.php?controller=instructor&action=deleteCourse&id=<?php echo $course['id']; ?>" 
                                    class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa khóa học này? Hành động này không thể hoàn tác!');">Xóa</a>
+                                   title="Xóa khóa học"
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa khóa học này? Hành động này không thể hoàn tác!');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
