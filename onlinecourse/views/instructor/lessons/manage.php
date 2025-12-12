@@ -64,8 +64,9 @@
                                 <th style="width: 60px;">STT</th>
                                 <th>Tên bài học</th>
                                 <th style="width: 200px;">Video URL</th>
+                                <th style="width: 120px;">Tài liệu</th>
                                 <th style="width: 150px;">Ngày tạo</th>
-                                <th style="width: 200px;" class="text-center">Thao tác</th>
+                                <th style="width: 250px;" class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,10 +97,19 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-file-earmark"></i> <?php echo $lesson['material_count'] ?? 0; ?> file
+                                    </span>
+                                </td>
+                                <td>
                                     <small><?php echo date('d/m/Y H:i', strtotime($lesson['created_at'])); ?></small>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
+                                        <a href="index.php?controller=instructor&action=uploadMaterial&lesson_id=<?php echo $lesson['id']; ?>" 
+                                           class="btn btn-sm btn-success" title="Quản lý tài liệu">
+                                            <i class="bi bi-file-earmark"></i> Tài liệu
+                                        </a>
                                         <a href="index.php?controller=instructor&action=editLesson&id=<?php echo $lesson['id']; ?>" 
                                            class="btn btn-sm btn-warning" title="Sửa">
                                             <i class="bi bi-pencil"></i> Sửa

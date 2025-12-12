@@ -2,11 +2,13 @@
 require_once 'models/Course.php';
 require_once 'models/Category.php';
 require_once 'models/Lesson.php';
+require_once 'models/Material.php';
 
 class InstructorController {
     private $courseModel;
     private $categoryModel;
     private $lessonModel;
+    private $materialModel;
 
     public function __construct() {
         // Kiểm tra đăng nhập và quyền Giảng viên
@@ -21,6 +23,7 @@ class InstructorController {
         $this->courseModel = new Course($db);
         $this->categoryModel = new Category($db);
         $this->lessonModel = new Lesson($db);
+        $this->materialModel = new Material($db);
     }
 
     // Dashboard của giảng viên
@@ -269,6 +272,13 @@ class InstructorController {
         }
         
         $lessons = $this->lessonModel->getByCourseId($courseId);
+        
+        // Đếm số tài liệu cho mỗi bài học
+        foreach($lessons as &$lesson) {
+            $lesson['material_count'] = $this->materialModel->countByLessonId($lesson['id']);
+        }
+        unset($lesson);
+        
         include 'views/instructor/lessons/manage.php';
     }
 
@@ -429,6 +439,179 @@ class InstructorController {
             header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $courseId . "&msg=deleted");
         } else {
             header("Location: index.php?controller=instructor&action=manageLessons&course_id=" . $courseId . "&msg=error");
+        }
+        exit();
+    }
+
+    // ========== QUẢN LÝ TÀI LIỆU HỌC TẬP (MATERIALS) ==========
+
+    // Hiển thị form upload tài liệu
+    public function uploadMaterial() {
+        $instructorId = $_SESSION['user_id'];
+        $lessonId = isset($_GET['lesson_id']) ? intval($_GET['lesson_id']) : 0;
+        
+        if (!$lessonId || !$this->lessonModel->belongsToInstructor($lessonId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        $lesson = $this->lessonModel->getById($lessonId);
+        if (!$lesson) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $course = $this->courseModel->getById($lesson['course_id']);
+        $materials = $this->materialModel->getByLessonId($lessonId);
+        
+        include 'views/instructor/materials/upload.php';
+    }
+
+    // Xử lý upload tài liệu
+    public function storeMaterial() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $instructorId = $_SESSION['user_id'];
+            $lessonId = intval($_POST['lesson_id']);
+            
+            // Kiểm tra quyền sở hữu
+            if (!$this->lessonModel->belongsToInstructor($lessonId, $instructorId)) {
+                header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+                exit();
+            }
+            
+            // Kiểm tra có file được upload không
+            if (!isset($_FILES['file']) || $_FILES['file']['error'] != 0) {
+                $error = "Vui lòng chọn file để upload!";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                $materials = $this->materialModel->getByLessonId($lessonId);
+                include 'views/instructor/materials/upload.php';
+                return;
+            }
+            
+            $file = $_FILES['file'];
+            $allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-powerpoint',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'text/plain',
+                'application/zip',
+                'application/x-rar-compressed',
+                'image/jpeg',
+                'image/png',
+                'image/gif'
+            ];
+            
+            // Kiểm tra loại file
+            if (!in_array($file['type'], $allowedTypes)) {
+                $error = "Loại file không được hỗ trợ! Chỉ chấp nhận: PDF, Word, Excel, PowerPoint, Text, ZIP, RAR, Images";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                $materials = $this->materialModel->getByLessonId($lessonId);
+                include 'views/instructor/materials/upload.php';
+                return;
+            }
+            
+            // Kiểm tra kích thước file (tối đa 50MB)
+            $maxSize = 50 * 1024 * 1024; // 50MB
+            if ($file['size'] > $maxSize) {
+                $error = "File quá lớn! Kích thước tối đa là 50MB";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                $materials = $this->materialModel->getByLessonId($lessonId);
+                include 'views/instructor/materials/upload.php';
+                return;
+            }
+            
+            // Tạo thư mục lưu trữ nếu chưa có
+            $uploadDir = __DIR__ . '/../uploads/materials/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            // Tạo tên file duy nhất
+            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid() . '_' . time() . '.' . $fileExtension;
+            $filePath = $uploadDir . $fileName;
+            
+            // Upload file
+            if (move_uploaded_file($file['tmp_name'], $filePath)) {
+                // Lưu đường dẫn tương đối
+                $relativePath = 'uploads/materials/' . $fileName;
+                
+                // Lưu vào database
+                $result = $this->materialModel->create(
+                    $lessonId,
+                    $file['name'],
+                    $relativePath,
+                    $file['type']
+                );
+                
+                if ($result) {
+                    header("Location: index.php?controller=instructor&action=uploadMaterial&lesson_id=" . $lessonId . "&msg=success");
+                } else {
+                    // Xóa file nếu lưu database thất bại
+                    unlink($filePath);
+                    $error = "Có lỗi xảy ra khi lưu thông tin file!";
+                    $lesson = $this->lessonModel->getById($lessonId);
+                    $course = $this->courseModel->getById($lesson['course_id']);
+                    $materials = $this->materialModel->getByLessonId($lessonId);
+                    include 'views/instructor/materials/upload.php';
+                }
+            } else {
+                $error = "Có lỗi xảy ra khi upload file!";
+                $lesson = $this->lessonModel->getById($lessonId);
+                $course = $this->courseModel->getById($lesson['course_id']);
+                $materials = $this->materialModel->getByLessonId($lessonId);
+                include 'views/instructor/materials/upload.php';
+            }
+        } else {
+            header("Location: index.php?controller=instructor&action=dashboard");
+        }
+    }
+
+    // Xóa tài liệu
+    public function deleteMaterial() {
+        $instructorId = $_SESSION['user_id'];
+        $materialId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        if (!$materialId) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=error");
+            exit();
+        }
+        
+        // Kiểm tra quyền sở hữu
+        if (!$this->materialModel->belongsToInstructor($materialId, $instructorId)) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=unauthorized");
+            exit();
+        }
+        
+        // Lấy thông tin tài liệu
+        $material = $this->materialModel->getById($materialId);
+        if (!$material) {
+            header("Location: index.php?controller=instructor&action=dashboard&msg=notfound");
+            exit();
+        }
+        
+        $lessonId = $material['lesson_id'];
+        
+        // Xóa file vật lý
+        $filePath = __DIR__ . '/../' . $material['file_path'];
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+        
+        // Xóa trong database
+        $result = $this->materialModel->delete($materialId);
+        
+        if ($result) {
+            header("Location: index.php?controller=instructor&action=uploadMaterial&lesson_id=" . $lessonId . "&msg=deleted");
+        } else {
+            header("Location: index.php?controller=instructor&action=uploadMaterial&lesson_id=" . $lessonId . "&msg=error");
         }
         exit();
     }
