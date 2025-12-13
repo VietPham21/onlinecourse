@@ -10,7 +10,6 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     fullname VARCHAR(255),
     role INT DEFAULT 0 COMMENT '0: học viên, 1: giảng viên, 2: quản trị viên',
-    status INT DEFAULT 1 COMMENT '0: banned, 1: active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -33,7 +32,6 @@ CREATE TABLE courses (
     duration_weeks INT,
     level VARCHAR(50) COMMENT 'Beginner, Intermediate, Advanced',
     image VARCHAR(255),
-    is_approved INT DEFAULT 0 COMMENT '0: chờ duyệt, 1: đã duyệt',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
