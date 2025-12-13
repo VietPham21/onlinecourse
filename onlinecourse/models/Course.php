@@ -8,8 +8,7 @@ class Course {
     }
 
     /**
-     * Lấy tất cả khóa học đã duyệt
-     * Có thể tìm kiếm theo từ khóa và lọc theo danh mục
+     * Lấy tất cả khóa học đã duyệt, hỗ trợ tìm kiếm và lọc theo danh mục
      */
     public function getApprovedCourses($search = '', $category_id = 0) {
         $query = "
@@ -31,7 +30,7 @@ class Course {
             $query .= " AND c.category_id = :category_id ";
         }
 
-        $query .= " ORDER BY c.created_at DESC ";
+        $query .= " ORDER BY c.created_at DESC";
 
         $stmt = $this->conn->prepare($query);
 
@@ -69,23 +68,11 @@ class Course {
         $stmt->execute();
 
         $course = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$course) return null;
 
-        // Gán ảnh mặc định nếu chưa có
-        if (empty($course['image'])) {
-            $course['image'] = 'assets/uploads/courses/default.jpg';
-        }
-
-        // Nếu không có giảng viên
-        if (empty($course['instructor_name'])) {
-            $course['instructor_name'] = 'Chưa xác định';
-        }
-
-        // Nếu không có danh mục
-        if (empty($course['category_name'])) {
-            $course['category_name'] = 'Không có danh mục';
-        }
+        if (empty($course['image'])) $course['image'] = 'assets/uploads/courses/default.jpg';
+        if (empty($course['instructor_name'])) $course['instructor_name'] = 'Chưa xác định';
+        if (empty($course['category_name'])) $course['category_name'] = 'Không có danh mục';
 
         return $course;
     }
@@ -94,8 +81,7 @@ class Course {
      * Lấy danh sách tất cả danh mục
      */
     public function getCategories() {
-        $query = "SELECT * FROM categories ORDER BY name ASC";
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->conn->prepare("SELECT * FROM categories ORDER BY name ASC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

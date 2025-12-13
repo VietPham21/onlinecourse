@@ -27,20 +27,27 @@ class LessonController {
         $lesson_id = intval($_GET['lesson_id']);
         $course_id = intval($_GET['course_id']);
 
-        // Kiểm tra học viên đã đăng ký khóa học chưa
+        // Khởi tạo session nếu chưa
         if (session_status() == PHP_SESSION_NONE) session_start();
         $user_id = $_SESSION['user_id'] ?? null;
+
         if (!$user_id) {
             header('Location: index.php?controller=auth&action=login');
             exit;
         }
 
+        // Kiểm tra học viên đã đăng ký khóa học chưa
         if (!$this->enrollmentModel->isEnrolled($user_id, $course_id)) {
             die("Bạn chưa đăng ký khóa học này.");
         }
 
-        // Lấy danh sách bài học và tài liệu
+        // Lấy danh sách tất cả bài học của khóa học
         $lessons = $this->lessonModel->getLessonsByCourse($course_id);
+
+        // Lấy chi tiết bài học hiện tại
+        $lesson = $this->lessonModel->getLessonById($lesson_id);
+
+        // Lấy tài liệu của bài học hiện tại
         $materials = $this->materialModel->getMaterialsByLesson($lesson_id);
 
         include 'views/lessons/view.php';
