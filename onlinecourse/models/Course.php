@@ -18,6 +18,30 @@ class Course {
         $stmt->execute();
         return $stmt->fetchAll();
     }
+    // 2. Hàm duyệt khóa học (Sửa lỗi approve)
+    public function approve($id) {
+        $query = "UPDATE courses SET is_approved = 1 WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+    // 3. Hàm xóa khóa học (Sửa lỗi delete)
+    public function delete($id) {
+        $query = "DELETE FROM courses WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+    // 4. Hàm đếm (Cho thống kê)
+    public function countTotalCourses() {
+        $query = "SELECT COUNT(*) as total FROM courses";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return $row['total'];
+    }
     /**
      * Lấy tất cả khóa học đã duyệt, hỗ trợ tìm kiếm và lọc theo danh mục
      */
