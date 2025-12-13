@@ -6,7 +6,18 @@ class Course {
     public function __construct($db) {
         $this->conn = $db;
     }
-
+    public function getPendingCourses() {
+        // Sử dụng JOIN để lấy tên Giảng viên và tên Danh mục thay vì hiện mỗi ID
+        $query = "SELECT c.*, u.fullname as instructor_name, cat.name as category_name 
+                  FROM courses c
+                  LEFT JOIN users u ON c.instructor_id = u.id
+                  LEFT JOIN categories cat ON c.category_id = cat.id
+                  WHERE c.is_approved = 0 
+                  ORDER BY c.created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
     /**
      * Lấy tất cả khóa học đã duyệt, hỗ trợ tìm kiếm và lọc theo danh mục
      */
