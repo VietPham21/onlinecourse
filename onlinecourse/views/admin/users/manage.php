@@ -50,6 +50,20 @@
                             <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Bạn chắc chắn muốn khóa tài khoản này?')">Khóa</button>
                         <?php endif; ?>
                     </form>
+
+                    <?php if($user['role'] == 0): // Nếu là Học viên -> Hiện nút Lên Giảng viên ?>
+                        <a href="index.php?controller=admin&action=setRole&id=<?php echo $user['id']; ?>&new_role=1" 
+                        class="btn btn-info btn-sm text-white" 
+                        onclick="return confirm('Cấp quyền GIẢNG VIÊN cho người này?');">
+                        ▲ Lên GV
+                        </a>
+                    <?php elseif($user['role'] == 1): // Nếu là GV -> Hiện nút Xuống Học viên ?>
+                        <a href="index.php?controller=admin&action=setRole&id=<?php echo $user['id']; ?>&new_role=0" 
+                        class="btn btn-light border btn-sm" 
+                        onclick="return confirm('Hủy quyền Giảng viên của người này?');">
+                        ▼ Xuống HV
+                        </a>
+                    <?php endif; ?>
                 </td>
             </tr>
             <?php endforeach; ?>

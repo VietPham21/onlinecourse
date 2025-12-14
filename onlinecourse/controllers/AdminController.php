@@ -137,5 +137,26 @@ class AdminController {
             header("Location: index.php?controller=admin&action=pendingCourses&msg=deleted");
         }
     }
+
+    // Chuyển đổi vai trò: Học viên <-> Giảng viên
+    public function setRole() {
+        // Kiểm tra quyền Admin trước cho chắc
+        if (!isset($_SESSION['role']) || $_SESSION['role'] != 2) {
+             header("Location: index.php");
+             exit();
+        }
+
+        if (isset($_GET['id']) && isset($_GET['new_role'])) {
+            $id = $_GET['id'];
+            $new_role = $_GET['new_role'];
+            
+            // Chỉ cho phép set thành 0 (Học viên) hoặc 1 (Giảng viên)
+            if ($new_role == 0 || $new_role == 1) {
+                $this->userModel->updateRole($id, $new_role);
+            }
+            
+            header("Location: index.php?controller=admin&action=users");
+        }
+    }
 }
 ?>
