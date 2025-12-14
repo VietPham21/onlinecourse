@@ -26,8 +26,7 @@ class Lesson {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-}
-?>
+
     // Lấy tất cả bài học của một khóa học
     public function getByCourseId($courseId) {
         $query = "SELECT * FROM lessons WHERE course_id = :course_id ORDER BY `order` ASC, created_at ASC";

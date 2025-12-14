@@ -101,8 +101,7 @@ class Enrollment {
 
         return $stmt->execute();
     }
-}
-?>
+    
     // Lấy danh sách học viên đã đăng ký một khóa học
     public function getStudentsByCourseId($courseId) {
         $query = "SELECT e.*, u.id as student_id, u.username, u.email, u.fullname, u.created_at as student_created_at

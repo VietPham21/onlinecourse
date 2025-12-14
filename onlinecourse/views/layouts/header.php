@@ -40,7 +40,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
                         <?php if($_SESSION['role'] == 1): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-info" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle text-warning" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Giảng viên
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
@@ -55,7 +55,7 @@ if (session_status() == PHP_SESSION_NONE) {
                   
                         <?php if($_SESSION['role'] == 0): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-light" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle text-warning" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Học viên
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="studentDropdown">

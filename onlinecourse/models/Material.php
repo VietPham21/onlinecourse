@@ -25,8 +25,7 @@ class Material {
 
         return $materials;
     }
-}
-?>
+
     // Lấy tất cả tài liệu của một bài học
     public function getByLessonId($lessonId) {
         $query = "SELECT * FROM materials WHERE lesson_id = :lesson_id ORDER BY uploaded_at DESC";

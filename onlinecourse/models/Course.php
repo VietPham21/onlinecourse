@@ -119,7 +119,7 @@ class Course {
         $stmt = $this->conn->prepare("SELECT * FROM categories ORDER BY name ASC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    }
     // 5. Hàm tạo khóa học mới (Cho giảng viên)
     public function create($title, $description, $instructorId, $categoryId, $price, $durationWeeks, $level, $image) {
         $query = "INSERT INTO courses (title, description, instructor_id, category_id, price, duration_weeks, level, image, is_approved) 
