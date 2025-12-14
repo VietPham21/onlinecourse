@@ -39,57 +39,46 @@ if (session_status() == PHP_SESSION_NONE) {
                         <?php endif; ?>
 
                         <?php if($_SESSION['role'] == 1): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-info" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Giảng viên
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
-                            <li>
-                                <a class="dropdown-item"
-                                    href="index.php?controller=instructor&action=dashboard">
-                                    Quản lý khóa học
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-info" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Giảng viên
                                 </a>
-            </li>
-                            </ul>
-                        </li>
-                    <?php endif; ?>
+                                <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="index.php?controller=instructor&action=dashboard">
+                                            Quản lý khóa học
+                                        </a>
+                                    </li>
+                                    </ul>
+                            </li>
+                        <?php endif; ?>
                   
-                    <!-- Học viên -->
-                    <?php if($_SESSION['role'] == 0): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-info" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Học viên
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="studentDropdown">
-                                <li><a class="dropdown-item" href="index.php?controller=student&action=dashboard">Khóa học của tôi</a></li>
-                                <li><a class="dropdown-item" href="index.php?controller=course&action=index">Danh sách khóa học</a></li>
-                            </ul>
+                        <?php if($_SESSION['role'] == 0): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-light" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Học viên
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="studentDropdown">
+                                    <li><a class="dropdown-item" href="index.php?controller=student&action=dashboard">Khóa học của tôi</a></li>
+                                    <li><a class="dropdown-item" href="index.php?controller=course&action=index">Danh sách khóa học</a></li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Chào, <?= htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username']) ?></a>
                         </li>
-                    <?php endif; ?>
-                        <li class="nav-item"><a class="nav-link" href="#">Chào, <?php echo $_SESSION['username']; ?></a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-outline-danger btn-sm text-white" href="index.php?controller=auth&action=logout">Đăng xuất</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-danger btn-sm text-white ms-2" href="index.php?controller=auth&action=logout">Đăng xuất</a>
+                        </li>
+
                     <?php else: ?>
                         <li class="nav-item"><a class="nav-link" href="index.php?controller=auth&action=login">Đăng nhập</a></li>
                         <li class="nav-item"><a class="nav-link" href="index.php?controller=auth&action=register">Đăng ký</a></li>
                     <?php endif; ?>
-
-                    
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Chào, <?= htmlspecialchars($_SESSION['fullname'] ?? $_SESSION['username']) ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-danger btn-sm text-white" href="index.php?controller=auth&action=logout">Đăng xuất</a>
-                    </li>
-
-                <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="index.php?controller=auth&action=login">Đăng nhập</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.php?controller=auth&action=register">Đăng ký</a></li>
-                <?php endif; ?>
-
-            </ul>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<div class="container" style="min-height: 600px;">
+    <div class="container" style="min-height: 600px;">
