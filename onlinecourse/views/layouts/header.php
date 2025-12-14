@@ -32,6 +32,23 @@
                                 </ul>
                             </li>
                         <?php endif; ?>
+
+                        <?php if($_SESSION['role'] == 1): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-info" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Giảng viên
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
+                            <li>
+                                <a class="dropdown-item"
+                                    href="index.php?controller=instructor&action=dashboard">
+                                    Quản lý khóa học
+                                </a>
+            </li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
+
                         <li class="nav-item"><a class="nav-link" href="#">Chào, <?php echo $_SESSION['username']; ?></a></li>
                         <li class="nav-item"><a class="nav-link btn btn-outline-danger btn-sm text-white" href="index.php?controller=auth&action=logout">Đăng xuất</a></li>
                     <?php else: ?>
