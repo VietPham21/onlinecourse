@@ -129,10 +129,10 @@
                         <td><?php echo date('d/m/Y', strtotime($course['created_at'])); ?></td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="index.php?controller=course&action=detail&id=<?php echo $course['id']; ?>" 
+                                <!-- <a href="index.php?controller=course&action=detail&id=<?php echo $course['id']; ?>" 
                                    class="btn btn-sm btn-info" title="Xem chi tiết">
                                     <i class="bi bi-eye"></i>
-                                </a>
+                                </a> -->
                                 <a href="index.php?controller=instructor&action=manageLessons&course_id=<?php echo $course['id']; ?>" 
                                    class="btn btn-sm btn-primary" title="Quản lý bài học">
                                     <i class="bi bi-book"></i>
