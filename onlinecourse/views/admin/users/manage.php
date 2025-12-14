@@ -40,6 +40,17 @@
                     ?>
                 </td>
                 <td>
+                    <form action="index.php?controller=admin&action=toggleUserStatus" method="POST" style="display:inline;">
+                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                        <input type="hidden" name="current_status" value="<?php echo isset($user['status']) ? $user['status'] : 1; ?>">
+                        
+                        <?php if(isset($user['status']) && $user['status'] == 0): ?>
+                            <button type="submit" class="btn btn-success btn-sm">Mở khóa</button>
+                        <?php else: ?>
+                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Bạn chắc chắn muốn khóa tài khoản này?')">Khóa</button>
+                        <?php endif; ?>
+                    </form>
+
                     <?php if($user['role'] == 0): // Nếu là Học viên -> Hiện nút Lên Giảng viên ?>
                         <a href="index.php?controller=admin&action=setRole&id=<?php echo $user['id']; ?>&new_role=1" 
                         class="btn btn-info btn-sm text-white" 
@@ -53,16 +64,6 @@
                         ▼ Xuống HV
                         </a>
                     <?php endif; ?>
-                    <form action="index.php?controller=admin&action=toggleUserStatus" method="POST" style="display:inline;">
-                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                        <input type="hidden" name="current_status" value="<?php echo isset($user['status']) ? $user['status'] : 1; ?>">
-                        
-                        <?php if(isset($user['status']) && $user['status'] == 0): ?>
-                            <button type="submit" class="btn btn-success btn-sm">Mở khóa</button>
-                        <?php else: ?>
-                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Bạn chắc chắn muốn khóa tài khoản này?')">Khóa</button>
-                        <?php endif; ?>
-                    </form>
                 </td>
             </tr>
             <?php endforeach; ?>
