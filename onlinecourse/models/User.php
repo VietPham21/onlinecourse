@@ -76,5 +76,16 @@ class User {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+
+    // --- CODE CỦA ADMIN THÊM VÀO (ĐỂ CẤP QUYỀN) ---
+
+    // Hàm thay đổi quyền (Role): 0=Học viên, 1=Giảng viên
+    public function updateRole($id, $role) {
+        $query = "UPDATE users SET role = :role WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
 }
 ?>

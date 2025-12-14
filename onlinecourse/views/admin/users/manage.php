@@ -40,6 +40,19 @@
                     ?>
                 </td>
                 <td>
+                    <?php if($user['role'] == 0): // Nếu là Học viên -> Hiện nút Lên Giảng viên ?>
+                        <a href="index.php?controller=admin&action=setRole&id=<?php echo $user['id']; ?>&new_role=1" 
+                        class="btn btn-info btn-sm text-white" 
+                        onclick="return confirm('Cấp quyền GIẢNG VIÊN cho người này?');">
+                        ▲ Lên GV
+                        </a>
+                    <?php elseif($user['role'] == 1): // Nếu là GV -> Hiện nút Xuống Học viên ?>
+                        <a href="index.php?controller=admin&action=setRole&id=<?php echo $user['id']; ?>&new_role=0" 
+                        class="btn btn-light border btn-sm" 
+                        onclick="return confirm('Hủy quyền Giảng viên của người này?');">
+                        ▼ Xuống HV
+                        </a>
+                    <?php endif; ?>
                     <form action="index.php?controller=admin&action=toggleUserStatus" method="POST" style="display:inline;">
                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                         <input type="hidden" name="current_status" value="<?php echo isset($user['status']) ? $user['status'] : 1; ?>">
